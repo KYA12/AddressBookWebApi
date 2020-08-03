@@ -7,15 +7,22 @@ using System.Threading.Tasks;
 using TestAppAddressBook.Models;
 using System.Linq;
 using System.Transactions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace TestAppAddressBook.Services
 {
     public class ContactsService : IContactsService
     {
         private readonly string connection;
-        public ContactsService(string _connection) 
+        private readonly ILogger logger;
+        private readonly IConfiguration configuration;
+       
+        public ContactsService(IConfiguration _configuration, ILogger<ContactsService> _logger) 
         {
-            connection = _connection;
+            logger = _logger;
+            configuration = _configuration;
+            connection = configuration.GetConnectionString("DefaultConnection");
         }
         public async Task<List<Contact>> GetContactsAsync()
         {
@@ -46,6 +53,7 @@ namespace TestAppAddressBook.Services
             }
             catch (Exception ex)
             {
+                logger.LogError($"Error in ContactsService/GetContactsAsync action: {ex.Message}");
                 throw;
             }
         }
@@ -61,7 +69,7 @@ namespace TestAppAddressBook.Services
                     if (con.State == ConnectionState.Closed)
                         con.Open();
                     DynamicParameters parameter = new DynamicParameters();
-                    parameter.Add("@Id", id);
+                    parameter.Add("@ContactId", id);
                     var query = await con.QueryAsync<Contact, Phone, Contact> ("sp_GetContactById", (contact, phone) => 
                     {
                         Contact entry;
@@ -75,12 +83,13 @@ namespace TestAppAddressBook.Services
                         entry.Phones.Add(phone);
                         return entry;
                     }, parameter, splitOn: "ContactId", commandType: CommandType.StoredProcedure);
-                 
+                    tran.Complete();
                     return query.FirstOrDefault();
                 }
             }
             catch(Exception ex) 
             {
+                logger.LogError($"Error in ContactsService/GetContactById action: {ex.Message}");
                 throw;
             }
         }
@@ -100,11 +109,14 @@ namespace TestAppAddressBook.Services
                     parameters.Add("@LastName", contact.LastName);
                     parameters.Add("@Address", contact.Address);
                     rowAffected = await con.ExecuteAsync("sp_InsertContact", parameters, commandType: CommandType.StoredProcedure);
+                    tran.Complete();
                 }
+             
                 return rowAffected;
             }
             catch (Exception ex) 
             {
+                logger.LogError($"Error in ContactsServiceCreateContact action: {ex.Message}");
                 throw;
             }
         }
@@ -127,12 +139,13 @@ namespace TestAppAddressBook.Services
                     parameters.Add("@LastName", contact.LastName);
                     parameters.Add("@Address", contact.Address);
                     rowAffected = await con.ExecuteAsync("sp_UpdateContact", parameters, commandType: CommandType.StoredProcedure);
+                    tran.Complete();
                 }
-
                 return rowAffected;
             }
             catch(Exception ex)
             {
+                logger.LogError($"Error in ContactsService/UpdateContact action: {ex.Message}");
                 throw;
             }
         }
@@ -148,14 +161,16 @@ namespace TestAppAddressBook.Services
                     if (con.State == ConnectionState.Closed)
                         con.Open();
                     DynamicParameters parameters = new DynamicParameters();
-                    parameters.Add("@Id", id);
+                    parameters.Add("@ContactId", id);
                     rowAffected = await con.ExecuteAsync("sp_DeleteContact", parameters, commandType: CommandType.StoredProcedure);
+                    tran.Complete();
                 }
-
+                
                 return rowAffected;
             }
             catch (Exception ex) 
             {
+                logger.LogError($"Error in ContactsService/DeleteContact action: {ex.Message}");
                 throw;
             }
         }

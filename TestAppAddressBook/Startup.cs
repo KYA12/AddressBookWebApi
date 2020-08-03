@@ -28,8 +28,7 @@ namespace TestAppAddressBook
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddTransient<IContactsService, ContactsService>(provider => new ContactsService(connectionString));
-            //services.ConfigureSwaggerFeature();
+            services.AddTransient<IContactsService, ContactsService>();
             services.AddAutoMapper(typeof(Startup)); //Add AutoMapper service
             services.AddCors(options =>
             {
