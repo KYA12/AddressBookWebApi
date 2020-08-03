@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TestAppAddressBook.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/api/[controller]")]
     [Produces("application/json")]
     [ApiController]
     public class ContactsController: ControllerBase
@@ -115,7 +115,7 @@ namespace TestAppAddressBook.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult> PostCreateContact([FromBody] ContactViewModel contactViewModel)
+        public async Task<ActionResult> CreateContact([FromBody] ContactViewModel contactViewModel)
         {
             try
             {
