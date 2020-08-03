@@ -27,7 +27,7 @@ namespace TestAppAddressBook.Services
                 {
                     if (con.State == ConnectionState.Closed)
                         con.Open();
-                    var contacts = await con.QueryAsync<Contact, Phone, Contact>("GetContacts", (contact, phone) =>
+                    var contacts = await con.QueryAsync<Contact, Phone, Contact>("sp_GetContacts", (contact, phone) =>
                     {
                         Contact entry;
                         if (!contactDict.TryGetValue(contact.ContactId, out entry))
@@ -62,7 +62,7 @@ namespace TestAppAddressBook.Services
                         con.Open();
                     DynamicParameters parameter = new DynamicParameters();
                     parameter.Add("@Id", id);
-                    var query = await con.QueryAsync<Contact, Phone, Contact> ("GetContactById", (contact, phone) => 
+                    var query = await con.QueryAsync<Contact, Phone, Contact> ("sp_GetContactById", (contact, phone) => 
                     {
                         Contact entry;
                         if (!contactDict.TryGetValue(contact.ContactId, out entry))
@@ -99,7 +99,7 @@ namespace TestAppAddressBook.Services
                     parameters.Add("@FirstName", contact.FirstName);
                     parameters.Add("@LastName", contact.LastName);
                     parameters.Add("@Address", contact.Address);
-                    rowAffected = await con.ExecuteAsync("InsertContact", parameters, commandType: CommandType.StoredProcedure);
+                    rowAffected = await con.ExecuteAsync("sp_InsertContact", parameters, commandType: CommandType.StoredProcedure);
                 }
                 return rowAffected;
             }
@@ -126,7 +126,7 @@ namespace TestAppAddressBook.Services
                     parameters.Add("@Firstname", contact.FirstName);
                     parameters.Add("@LastName", contact.LastName);
                     parameters.Add("@Address", contact.Address);
-                    rowAffected = await con.ExecuteAsync("UpdateContact", parameters, commandType: CommandType.StoredProcedure);
+                    rowAffected = await con.ExecuteAsync("sp_UpdateContact", parameters, commandType: CommandType.StoredProcedure);
                 }
 
                 return rowAffected;
@@ -149,7 +149,7 @@ namespace TestAppAddressBook.Services
                         con.Open();
                     DynamicParameters parameters = new DynamicParameters();
                     parameters.Add("@Id", id);
-                    rowAffected = await con.ExecuteAsync("DeleteContact", parameters, commandType: CommandType.StoredProcedure);
+                    rowAffected = await con.ExecuteAsync("sp_DeleteContact", parameters, commandType: CommandType.StoredProcedure);
                 }
 
                 return rowAffected;
