@@ -12,6 +12,7 @@ namespace TestAppAddressBook
             CreateMap<Contact, ContactViewModel>().ForMember(destination => destination.User,
                 options => options.MapFrom(source => source.FirstName + " " + source.LastName)).ReverseMap();
             CreateMap<PhoneViewModel, Phone>().ReverseMap();
+            CreateMap<AddUpdateContactViewModel, Contact>().ReverseMap();
         }
     }
 }

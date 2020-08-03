@@ -115,11 +115,11 @@ namespace TestAppAddressBook.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult> CreateContact([FromBody] ContactViewModel contactViewModel)
+        public async Task<ActionResult> CreateContact([FromBody] AddUpdateContactViewModel contactViewModel)
         {
             try
             {
-                if (contactViewModel != null)
+                if (contactViewModel != null && ModelState.IsValid)
                 {
                     var result = await service.CreateContactAsync(mapper.Map<Contact>(contactViewModel));
                     if (result > 0)
@@ -157,12 +157,13 @@ namespace TestAppAddressBook.Controllers
         [ProducesResponseType(404)]
         [ProducesResponseType(500)]
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateContact(int? id, [FromBody] Contact contact)
+        public async Task<ActionResult> UpdateContact(int? id, [FromBody] AddUpdateContactViewModel contactViewModel)
         {
             try
             {
-                if (contact != null && id != null)
+                if (contactViewModel != null && id != null && ModelState.IsValid)
                 {
+                    var contact = mapper.Map<Contact>(contactViewModel);
                     int result = await service.UpdateContactAsync(contact, id);
                     if (result > 0)
                     {
@@ -210,7 +211,7 @@ namespace TestAppAddressBook.Controllers
                         logger.LogDebug($"Contact with Id: {id} deleted from the database. Returned 200");
                         return Ok();
                     }
-                    logger.LogDebug($"No contact with id: { id} in the database. Returned 404");
+                    logger.LogDebug($"No contact with id: {id} in the database. Returned 404");
                     return NotFound();
                 }
                 logger.LogDebug($"Invalid Id sent from the client. Returned 400");
